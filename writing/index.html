@@ -191,6 +191,12 @@ toggledarkmode = function(enabled){
 
 const save_key = decodeURI(window.location.pathname).replace(/\/$/g, '');
 $("#wmd-input").prop('disabled', true);
+
+fetch('/_/' + save_key + '.md').then(res => res.text()).then(text => {
+    $("#wmd-input").val(text);
+    scrollBothToTop();
+    editor.refreshPreview();
+});
 fetch('/_/' + save_key + '.md', {method: 'PUT'}).then(res => {
         if (res.status != 403) {
             $("#wmd-input").prop('disabled', false);
@@ -201,12 +207,6 @@ fetch('/_/' + save_key + '.md', {method: 'PUT'}).then(res => {
             $('body').removeClass('fixedheight');
             $('html').removeClass('fixedheight');
         }
-});
-
-fetch('/_/' + save_key + '.md').then(res => res.text()).then(text => {
-    $("#wmd-input").val(text);
-    scrollBothToTop();
-    editor.refreshPreview();
 });
 
 openFile = function(e) {         
