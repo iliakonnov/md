@@ -54,6 +54,7 @@ html { font-family: sans-serif; }
 #wmd-preview a { text-decoration: none; color: #07c; }
 #wmd-preview .pagebreak { border-bottom: 1px dashed #eee; padding-top: 20px; margin-bottom: 30px; }
 #helpicon { position: absolute; bottom: 0; left: 0; margin: 5px; color: #999; cursor: pointer; font-family: sans-serif;  font-size: 15px; }
+#deleteicon { position: absolute; bottom: 20px; left: 0; margin: 5px; color: #999; cursor: pointer; font-family: sans-serif;  font-size: 15px; }
 #help { display: none; position: fixed; top: 10%; height: 70%; left: 25%; max-width: 50%; overflow: hidden; background-color: white; border: 1px solid #ccc; padding: 15px 30px 20px 30px; overflow-y: auto; }
 #help pre {  word-wrap: break-word !important; white-space: pre-wrap !important; }
 #closeicon { position: fixed; top: 10%; left: 25%; margin: 5px 8px; color: #ccc; cursor: pointer; font-family: sans-serif; }
@@ -61,6 +62,7 @@ html { font-family: sans-serif; }
 
 @media print {
     #helpicon { display: none; }
+    #deleteicon { display: none; }
     #wmd-preview .pagebreak { opacity: 0; }
 }
 
@@ -92,6 +94,7 @@ body.dark-mode { background-color: #212121; }
 <div id="wmd-preview" class="column wmd-preview">
 <noscript>This text editor requires JavaScript.</noscript>
 </div>
+<div id="deleteicon" class="unselectable">␡</div>
 <div id="helpicon" class="unselectable">?</div>
 <div id="help">
 <div id="closeicon" class="unselectable">X</div>
@@ -191,6 +194,7 @@ toggledarkmode = function(enabled){
 
 const save_key = decodeURI(window.location.pathname).replace(/\/$/g, '');
 $("#wmd-input").prop('disabled', true);
+$("#deleteicon").hide();
 
 fetch('/_/' + save_key + '.md').then(res => res.text()).then(text => {
     $("#wmd-input").val(text);
@@ -200,6 +204,7 @@ fetch('/_/' + save_key + '.md').then(res => res.text()).then(text => {
 fetch('/_/' + save_key + '.md', {method: 'PUT'}).then(res => {
     if (res.status != 403) {
         $("#wmd-input").prop('disabled', false);
+	$("#deleteicon").show();
         mode = 3 - 1;
     } else {
         mode = 1 - 1;
@@ -208,6 +213,16 @@ fetch('/_/' + save_key + '.md', {method: 'PUT'}).then(res => {
         $('html').removeClass('fixedheight');
     }
     nextMode();
+});
+
+$('#deleteicon').click(function() {
+    if (confirm("Really delete " + save_key + "?")) {
+        fetch('/_/' + save_key + '.md', {method: 'DELETE'}).then(res => {
+            if (res.ok) {
+                window.location.href = '/_home'
+            }
+        });
+    }
 });
 
 openFile = function(e) {
